@@ -98,12 +98,13 @@ Available options:
   -R/--overallRate NUM
         The max number of requests to make per second from all connections.
         connection rate will take precedence if both are set.
-        NOTE: if using rate limiting and a very large rate is entered which cannot be met,
-              Autocannon will do as many requests as possible per second. Also, latency data will be corrected to compensate for the effects of the coordinated omission issue. If you are not familiar with the coordinated omission issue, you should probably read [this article](http://highscalability.com/blog/2015/10/5/your-load-generator-is-probably-lying-to-you-take-the-red-pi.html) or watch this [Gil Tene's talk](https://www.youtube.com/watch?v=lJ8ydIuPFeU) on the topic.
+        NOTE: if using rate limiting and a very large rate is entered which cannot be met, Autocannon will do as many requests as possible per second.
+        Also, latency data will be corrected to compensate for the effects of the coordinated omission issue.
+        If you are not familiar with the coordinated omission issue, you should probably read [this article](http://highscalability.com/blog/2015/10/5/your-load-generator-is-probably-lying-to-you-take-the-red-pi.html) or watch this [Gil Tene's talk](https://www.youtube.com/watch?v=lJ8ydIuPFeU) on the topic.
   -C/--ignoreCoordinatedOmission
         Ignore the coordinated omission issue when requests should be sent at a fixed rate using 'connectionRate' or 'overallRate'.
         NOTE: it is not recommended to enable this option.
-              When the request rate cannot be met because the server is too slow, many request latencies might be missing and Autocannon might report a misleading latency distribution.
+        When the request rate cannot be met because the server is too slow, many request latencies might be missing and Autocannon might report a misleading latency distribution.
   -D/--reconnectRate NUM
         The number of requests to make before resetting a connections connection to the
         server.
@@ -112,7 +113,7 @@ Available options:
   -l/--latency
         Print all the latency data. default: false.
   -I/--idReplacement
-        Enable replacement of [<id>] with a randomly generated ID within the request body. default: false.
+        Enable replacement of `[<id>]` with a randomly generated ID within the request body. e.g. `/items/[<id>]`. default: false.
   -j/--json
         Print the output as newline delimited JSON. This will cause the progress bar and results not to be rendered. default: false.
   -f/--forever
@@ -136,6 +137,8 @@ Available options:
         Print connection errors to stderr.
   -v/--version
         Print the version number.
+  -V/--verbose
+        Print the table with results. default: true.
   -h/--help
         Print this menu.
 ```
@@ -390,13 +393,28 @@ Check out [this example](./samples/track-run.js) to see it in use, as well.
 
 ### autocannon.printResult(resultObject[, opts])
 
-Print the result tables to the terminal, programmatically.
+Returns a text string containing the result tables.
 
 * `resultObject`: The result object of autocannon. _REQUIRED_.
-* `opts`: Configuration options for printing the tables. This can have the following attributes. _OPTIONAL_.
-    * `outputStream`: The stream to output to. default: `process.stderr`.
-    * `renderResultsTable`: A truthy value to enable the rendering of the results table. default: `true`.
-    * `renderLatencyTable`: A truthy value to enable the rendering of the latency table. default: `false`.
+* `opts`: Configuration options for generating the tables. These may include the following attributes. _OPTIONAL_.
+    * `outputStream`: The stream to which output is directed. It is primarily used to check if the terminal supports color. default: `process.stderr`.
+    * `renderResultsTable`: A truthy value to enable the creation of the results table. default: `true`.
+    * `renderLatencyTable`: A truthy value to enable the creation of the latency table. default: `false`.
+
+Example:
+
+```js
+"use strict";
+
+const { stdout } = require("node:process");
+const autocannon = require("autocannon");
+
+function print(result) {
+  stdout.write(autocannon.printResult(result));
+}
+
+autocannon({ url: "http://localhost:3000" }, (err, result) => print(result));
+```
 
 ### autocannon.aggregateResult(results[, opts])
 
@@ -449,6 +467,7 @@ The results object emitted by `done` and passed to the `autocannon()` callback h
 * `pipelining`: The number of pipelined requests used per connection (value of `opts.pipelining`).
 * `non2xx`: The number of non-2xx response status codes received.
 * `resets`: How many times the requests pipeline was reset due to `setupRequest` returning a falsey value.
+* `statusCodeStats`: Requests counter per status code (e.g. `{ "200": { "count": "500" } }`)
 
 The histogram objects for `requests`, `latency` and `throughput` are [hdr-histogram-percentiles-obj](https://github.com/thekemkid/hdr-histogram-percentiles-obj) objects and have this shape:
 

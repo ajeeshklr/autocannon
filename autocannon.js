@@ -11,7 +11,7 @@ const URL = require('url').URL
 const spawn = require('child_process').spawn
 const managePath = require('manage-path')
 const hasAsyncHooks = require('has-async-hooks')
-const subarg = require('subarg')
+const subarg = require('@minimistjs/subarg')
 const printResult = require('./lib/printResult')
 const initJob = require('./lib/init')
 const track = require('./lib/progressTracker')
@@ -71,6 +71,7 @@ const alias = {
   renderProgressBar: 'progress',
   renderStatusCodes: 'statusCodes',
   title: 'T',
+  verbose: 'V',
   version: 'v',
   forever: 'f',
   idReplacement: 'I',
@@ -98,12 +99,13 @@ const defaults = {
   idReplacement: false,
   excludeErrorStats: false,
   debug: false,
-  workers: 0
+  workers: 0,
+  verbose: true
 }
 
 function parseArguments (argvs) {
   let argv = subarg(argvs, {
-    boolean: ['json', 'n', 'help', 'renderLatencyTable', 'renderProgressBar', 'renderStatusCodes', 'forever', 'idReplacement', 'excludeErrorStats', 'onPort', 'debug', 'ignoreCoordinatedOmission'],
+    boolean: ['json', 'n', 'help', 'renderLatencyTable', 'renderProgressBar', 'renderStatusCodes', 'forever', 'idReplacement', 'excludeErrorStats', 'onPort', 'debug', 'ignoreCoordinatedOmission', 'verbose'],
     alias,
     default: defaults,
     '--': true
